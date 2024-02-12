@@ -1,0 +1,60 @@
+import pyglet
+import random
+
+window_width = 800
+window_height = 200
+window = pyglet.window.Window(width=window_width, height=window_height, caption='Binary Search Visualization')
+batch = pyglet.graphics.Batch()
+num_numbers = 15
+rect_size = min(window_width // num_numbers, window_height)
+label_font_size = min(24, rect_size - 10)
+numbers = sorted(random.sample(range(1, 30), num_numbers - 1) + [21])
+left = 0
+right = len(numbers) - 1
+mid = (left + right) // 2
+found = False
+search_complete = False
+
+def binary_search(dt):
+    global left, right, mid, found, search_complete
+    if left <= right and not found:
+        mid = (left + right) // 2
+        if numbers[mid] == 21:
+            found = True
+        elif numbers[mid] < 21:
+            left = mid + 1
+        else:
+            right = mid - 1
+    else:
+        search_complete = True
+
+pyglet.clock.schedule_interval(binary_search, 2)
+
+@window.event
+def on_draw():
+    window.clear()
+    start_x = (window_width - num_numbers * rect_size) // 2
+    start_y = (window_height - rect_size) // 2
+
+    for i, number in enumerate(numbers):
+        x = start_x + i * rect_size
+        y = start_y
+        width = rect_size
+        height = rect_size
+
+        if left <= i <= right and not search_complete:
+            color = (255, 0, 0)
+        elif i == mid and not search_complete:
+            color = (255, 255, 0)
+        elif found and i == mid:
+            color = (0, 255, 0)
+        else:
+            color = (200, 200, 200)
+
+        draw_rectangle_with_number(x, y, width, height, number, color)
+def draw_rectangle_with_number(x, y, width, height, number, color):
+    pyglet.shapes.Rectangle(x, y, width, height, color=color, batch=batch).draw()
+    label = pyglet.text.Label(str(number), font_size=label_font_size, x=x+width//2, y=y+height//2, anchor_x='center', anchor_y='center', batch=batch)
+    label.draw()
+
+pyglet.app.run()
